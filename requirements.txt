@@ -1,6 +1,7 @@
 numpy
 pandas
-matplotlib
-tensorflow
 torch 
 torchvision
+demoji
+nltk
+unidecode
