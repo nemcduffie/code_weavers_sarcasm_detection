@@ -12,6 +12,3 @@ y = torch.sin(x)
 
 print(x)
 print(y)
-
-# while True:
-#     print("hiiii")
