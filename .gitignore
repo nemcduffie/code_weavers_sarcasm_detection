@@ -1,3 +1,9 @@
 
 .DS_Store
 *.pyc
+*.pyo
+__pycache__/
+glove.twitter.27B/*.txt
+output_file.txt
+prep_test.json
+prep_train.json

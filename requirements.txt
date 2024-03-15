@@ -5,3 +5,4 @@ torchvision
 demoji
 nltk
 unidecode
+keras
