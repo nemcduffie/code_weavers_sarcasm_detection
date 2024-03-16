@@ -3,7 +3,6 @@ import json
 import torch.nn as nn
 
 from tensorflow import keras
-from keras.preprocessing.text import Tokenizer
 from keras.utils import pad_sequences
 from keras.initializers import Constant
 from keras.optimizers import Adam
