@@ -1,21 +1,10 @@
-import numpy as np
-import pandas as pd
-import seaborn as sns
 import torch.nn as nn
-import matplotlib.pyplot as plt
 from sklearn.metrics import (
     classification_report,
-    confusion_matrix,
-    accuracy_score,
     f1_score,
 )
-from sklearn.model_selection import train_test_split
 
-from tensorflow import keras
 
-from keras.optimizers import Adam
-
-# from keras.optimizers.legacy import Adam
 from keras.models import Sequential
 from keras.layers import LSTM as KerasLSTM
 from keras.layers import Dense, Embedding, Dropout, Bidirectional
@@ -30,7 +19,6 @@ class LSTM(nn.Module):
         embedding_dim,
         embedding_matrix,
         drop_rate=0.5,
-        learning_rate=0.2,
     ):
         self.model = Sequential()
         self.model.add(
@@ -51,12 +39,13 @@ class LSTM(nn.Module):
                 )
             )
         )
+
         self.model.add(Dense(40, activation='relu'))
         self.model.add(Dropout(drop_rate))
         self.model.add(Dense(20))
         self.model.add(Dense(1, activation='sigmoid'))
         self.model.compile(
-            optimizer=Adam(learning_rate=learning_rate),
+            optimizer='adam',
             loss='binary_crossentropy',
             metrics=['accuracy'],
         )

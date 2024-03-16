@@ -1,20 +1,9 @@
 import argparse
-import torch
-import torch.nn as nn
-import unidecode
-import string
-import time
 import numpy as np
 import json
 
-from tensorflow import keras
 from keras.preprocessing.text import Tokenizer
 from keras.utils import pad_sequences
-from keras.initializers import Constant
-from keras.optimizers import Adam
-from sklearn.metrics import f1_score
-from sklearn.metrics import classification_report
-from sklearn.model_selection import train_test_split
 from models.lstm import LSTM
 from models.ffnn import FFNN
 
@@ -23,6 +12,7 @@ EMBEDDING_PATH = './glove.twitter.27B/glove.twitter.27B.200d.txt'
 TRAIN_DATA_PATH = './prep_train.json'
 TEST_DATA_PATH = './prep_test.json'
 EMBEDDING_DIM = 200
+EPOCHS = 20
 
 
 # Maximun length function
@@ -147,6 +137,7 @@ def main():
             train_labels,
             test_padded_data,
             test_labels,
+            epochs=EPOCHS,
         )
         f1score, report = model.evaluate_model(test_padded_data, test_labels)
 
@@ -161,7 +152,6 @@ def main():
             EMBEDDING_DIM,
             embedding_matrix,
             drop_rate=0.5,
-            learning_rate=0.2,
         )
 
         # Train model
@@ -170,9 +160,11 @@ def main():
             train_labels,
             test_padded_data,
             test_labels,
+            epochs=EPOCHS,
         )
         f1score, report = model.evaluate_model(test_padded_data, test_labels)
 
+        print()
         print("F1-score:", f1score)
         print("Classification Report:")
         print(report)

@@ -1,14 +1,10 @@
 import numpy as np
-import json
 import torch.nn as nn
 
 from tensorflow import keras
-from keras.utils import pad_sequences
 from keras.initializers import Constant
-from keras.optimizers import Adam
 from sklearn.metrics import f1_score
 from sklearn.metrics import classification_report
-from sklearn.model_selection import train_test_split
 
 
 class FFNN(nn.Module):
