@@ -5,5 +5,5 @@ torchvision
 demoji
 nltk
 unidecode
-keras==2.6.0
-tensorflow==2.7.0
+keras==2.15.0
+tensorflow

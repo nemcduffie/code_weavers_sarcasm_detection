@@ -7,13 +7,18 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
     accuracy_score,
+    f1_score,
 )
 from sklearn.model_selection import train_test_split
 
 from tensorflow import keras
+
 from keras.optimizers import Adam
+
+# from keras.optimizers.legacy import Adam
 from keras.models import Sequential
-from keras.layers import Dense, Embedding, LSTM, Dropout, Bidirectional
+from keras.layers import LSTM as KerasLSTM
+from keras.layers import Dense, Embedding, Dropout, Bidirectional
 from keras.initializers import Constant
 
 
@@ -21,18 +26,17 @@ class LSTM(nn.Module):
     def __init__(
         self,
         num_words,
-        hidden_size,
         max_len,
+        embedding_dim,
         embedding_matrix,
-        n_layers=2,  # TODO
         drop_rate=0.5,
-        batch_size=1,
+        learning_rate=0.2,
     ):
         self.model = Sequential()
         self.model.add(
             Embedding(
                 input_dim=num_words,
-                output_dim=200,
+                output_dim=embedding_dim,
                 input_length=max_len,
                 embeddings_initializer=Constant(embedding_matrix),
                 trainable=False,
@@ -40,63 +44,53 @@ class LSTM(nn.Module):
         )
         self.model.add(
             Bidirectional(
-                LSTM(
-                    units=hidden_size, recurrent_dropout=0.5, dropout=drop_rate
+                KerasLSTM(
+                    units=embedding_dim,
+                    recurrent_dropout=0.5,
+                    dropout=drop_rate,
                 )
             )
         )
-        # TODO: try without bidirectional, adjust dim and dropouts?
-
         self.model.add(Dense(40, activation='relu'))
         self.model.add(Dropout(drop_rate))
         self.model.add(Dense(20))
         self.model.add(Dense(1, activation='sigmoid'))
-        # self.model.compile(
-        #     optimizer=Adam(lr=0.01),
-        #     loss='binary_crossentropy',
-        #     metrics=['accuracy'],
-        # )
         self.model.compile(
-            optimizer='adam', loss='binary_crossentropy', metrics=['accuracy']
+            optimizer=Adam(learning_rate=learning_rate),
+            loss='binary_crossentropy',
+            metrics=['accuracy'],
         )
 
-    def metrics(self, X_train, y_train, X_test, y_test):
-        self.model.summary()
-        self.history = self.model.fit(
-            X_train,
-            y_train,
-            batch_size=self.batch_size,
-            validation_data=(X_test, y_test),
-            epochs=2,
+    # Train model function
+    def train_model(
+        self,
+        train_data,
+        train_labels,
+        val_data,
+        val_labels,
+        epochs=20,
+        verbose=1,
+    ):
+        return self.model.fit(
+            train_data,
+            train_labels,
+            epochs=epochs,
+            validation_data=(val_data, val_labels),
+            verbose=verbose,
         )
-        # self.model.fit(
-        #     encodings_train,
-        #     data_train['is_sarcastic'],
-        #     epochs=8,
-        #     batch_size=64,
-        #     validation_data=(encodings_test, data_test['is_sarcastic']),
-        # )
 
-        pred = self.model.predict_classes(X_test)
-        print(
-            classification_report(
-                y_test, pred, target_names=['Not Sarcastic', 'Sarcastic']
-            )
-        )
-        cm = confusion_matrix(y_test, pred)
-        cm = pd.DataFrame(
-            cm,
-            index=['Not Sarcastic', 'Sarcastic'],
-            columns=['Not Sarcastic', 'Sarcastic'],
-        )
-        plt.figure(figsize=(10, 10))
-        sns.heatmap(
-            cm,
-            cmap="Blues",
-            linecolor='black',
-            linewidth=1,
-            annot=True,
-            fmt='',
-            xticklabels=['Not Sarcastic', 'Sarcastic'],
-            yticklabels=['Not Sarcastic', 'Sarcastic'],
-        )
+    # Evaluation function
+    def evaluate_model(self, test_data, test_labels):
+        # Test the model
+        predictions = self.model.predict(test_data)
+        predictions = (predictions > 0.5).astype(
+            int
+        )  # Convert the probabilities into binary predictions
+
+        # Calculate F1-score
+        f1score = f1_score(test_labels, predictions)
+
+        # Classification report
+        report = classification_report(test_labels, predictions)
+
+        return f1score, report

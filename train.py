@@ -4,38 +4,25 @@ import torch.nn as nn
 import unidecode
 import string
 import time
-
-from utils import (
-    load_dataset,
-    char_tensor,
-    random_training_set,
-    time_since,
-    random_chunk,
-    CHUNK_LEN,
-)
-
-# from models.lstm import LSTM
-from models.ffnn import FFNN
-
 import numpy as np
 import json
-import torch.nn as nn
 
-# from tensorflow import keras
+from tensorflow import keras
 from keras.preprocessing.text import Tokenizer
-
-# from keras.layers import TextVectorization
 from keras.utils import pad_sequences
 from keras.initializers import Constant
 from keras.optimizers import Adam
 from sklearn.metrics import f1_score
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
+from models.lstm import LSTM
+from models.ffnn import FFNN
 
 
 EMBEDDING_PATH = './glove.twitter.27B/glove.twitter.27B.200d.txt'
 TRAIN_DATA_PATH = './prep_train.json'
 TEST_DATA_PATH = './prep_test.json'
+EMBEDDING_DIM = 200
 
 
 # Maximun length function
@@ -142,7 +129,7 @@ def main():
     # Create embedding matrix
     word_index = tokenizer.word_index
     num_words = len(word_index) + 1
-    embedding_matrix = np.zeros((num_words, 200))
+    embedding_matrix = np.zeros((num_words, EMBEDDING_DIM))
 
     for word, i in word_index.items():
         if i < num_words:
@@ -151,58 +138,45 @@ def main():
                 embedding_matrix[i] = emb_vec
 
     if args.train_ffnn:
-
         # Create model
-        model = FFNN.create_model(num_words, max_len, embedding_matrix)
+        model = FFNN(num_words, max_len, EMBEDDING_DIM, embedding_matrix)
 
         # Train model
-        history = FFNN.train_model(
-            model,
+        history = model.train_model(
             train_padded_data,
             train_labels,
             test_padded_data,
             test_labels,
         )
-        f1score, report = FFNN.evaluate_model(
-            model, test_padded_data, test_labels
-        )
+        f1score, report = model.evaluate_model(test_padded_data, test_labels)
 
         print("F1-score:", f1score)
         print("Classification Report:")
         print(report)
 
     if args.lstm_train:
-        n_epochs = 3000
-        print_every = 100
-        plot_every = 10
-        hidden_size = 128
-        n_layers = 2
+        model = LSTM(
+            num_words,
+            max_len,
+            EMBEDDING_DIM,
+            embedding_matrix,
+            drop_rate=0.5,
+            learning_rate=0.2,
+        )
 
-        lr = 0.005
-        # decoder = LSTM(num_words, hidden_size, num_words, n_layers)
-        # decoder_optimizer = torch.optim.Adam(decoder.parameters(), lr=lr)
+        # Train model
+        history = model.train_model(
+            train_padded_data,
+            train_labels,
+            test_padded_data,
+            test_labels,
+        )
+        f1score, report = model.evaluate_model(test_padded_data, test_labels)
 
-        start = time.time()
-        all_losses = []
-        loss_avg = 0
-
-        # for epoch in range(1, n_epochs + 1):
-        #     loss = train(decoder, decoder_optimizer, *random_training_set())
-        #     loss_avg += loss
-
-        #     if epoch % print_every == 0:
-        #         print(
-        #             '[{} ({} {}%) {:.4f}]'.format(
-        #                 time_since(start), epoch, epoch / n_epochs * 100, loss
-        #             )
-        #         )
-        #         print(generate(decoder, 'A', 100), '\n')
-
-        #     if epoch % plot_every == 0:
-        #         all_losses.append(loss_avg / plot_every)
-        #         loss_avg = 0
+        print("F1-score:", f1score)
+        print("Classification Report:")
+        print(report)
 
 
 if __name__ == "__main__":
     main()
-

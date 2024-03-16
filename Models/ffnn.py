@@ -13,34 +13,35 @@ from sklearn.model_selection import train_test_split
 
 class FFNN(nn.Module):
     # Create model function
-    def create_model(num_words, max_len, embedding_matrix):
-        model = keras.Sequential()
-        model.add(
+    def __init__(self, num_words, max_len, embedding_dim, embedding_matrix):
+        self.model = keras.Sequential()
+        self.model.add(
             keras.layers.Embedding(
                 input_dim=num_words,
-                output_dim=200,
+                output_dim=embedding_dim,
                 input_length=max_len,
                 embeddings_initializer=Constant(embedding_matrix),
                 trainable=False,
             )
         )
-        model.add(keras.layers.GlobalAveragePooling1D())
-        model.add(
+        self.model.add(keras.layers.GlobalAveragePooling1D())
+        self.model.add(
             keras.layers.Dense(63, activation='relu')
         )  # First hidden layer
-        model.add(
+        self.model.add(
             keras.layers.Dense(32, activation='tanh')
         )  # Second hidden layer
-        model.add(keras.layers.Dense(1, activation='sigmoid'))  # Output layer
-        model.summary()
-        model.compile(
+        self.model.add(
+            keras.layers.Dense(1, activation='sigmoid')
+        )  # Output layer
+        self.model.summary()
+        self.model.compile(
             optimizer='adam', loss='binary_crossentropy', metrics=['accuracy']
         )
-        return model
 
     # Train model function
     def train_model(
-        model,
+        self,
         train_data,
         train_labels,
         val_data,
@@ -48,19 +49,18 @@ class FFNN(nn.Module):
         epochs=20,
         verbose=1,
     ):
-        history = model.fit(
+        return self.model.fit(
             train_data,
             train_labels,
             epochs=epochs,
             validation_data=(val_data, val_labels),
             verbose=verbose,
         )
-        return history
 
     # Evaluation function
-    def evaluate_model(model, test_data, test_labels):
+    def evaluate_model(self, test_data, test_labels):
         # Test the model
-        predictions = model.predict(test_data)
+        predictions = self.model.predict(test_data)
         predictions = (predictions > 0.5).astype(
             int
         )  # Convert the probabilities into binary predictions
