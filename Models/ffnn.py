@@ -8,7 +8,8 @@ from sklearn.metrics import classification_report
 
 
 class FFNN(nn.Module):
-    # Create model function
+    __name__ = 'FFNN'
+
     def __init__(self, num_words, max_len, embedding_dim, embedding_matrix):
         self.model = keras.Sequential()
         self.model.add(

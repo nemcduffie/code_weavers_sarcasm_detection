@@ -12,13 +12,15 @@ from keras.initializers import Constant
 
 
 class LSTM(nn.Module):
+    __name__ = 'LSTM'
+
     def __init__(
         self,
         num_words,
         max_len,
         embedding_dim,
         embedding_matrix,
-        drop_rate=0.5,
+        drop_rate=0.3,
     ):
         self.model = Sequential()
         self.model.add(
@@ -34,7 +36,6 @@ class LSTM(nn.Module):
             Bidirectional(
                 KerasLSTM(
                     units=embedding_dim,
-                    recurrent_dropout=0.5,
                     dropout=drop_rate,
                 )
             )
@@ -64,6 +65,7 @@ class LSTM(nn.Module):
             train_data,
             train_labels,
             epochs=epochs,
+            class_weight={0: 1, 1: 60},
             validation_data=(val_data, val_labels),
             verbose=verbose,
         )
@@ -77,7 +79,7 @@ class LSTM(nn.Module):
         )  # Convert the probabilities into binary predictions
 
         # Calculate F1-score
-        f1score = f1_score(test_labels, predictions)
+        f1score = f1_score(test_labels, predictions, average='macro')
 
         # Classification report
         report = classification_report(test_labels, predictions)

@@ -1,12 +1,16 @@
 import argparse
 import numpy as np
 import json
+import logging
 
 from keras.preprocessing.text import Tokenizer
 from keras.utils import pad_sequences
 from models.lstm import LSTM
 from models.ffnn import FFNN
 
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+logging.basicConfig(filename='train.log', level=logging.DEBUG)
 
 EMBEDDING_PATH = './glove.twitter.27B/glove.twitter.27B.200d.txt'
 TRAIN_DATA_PATH = './prep_train.json'
@@ -41,6 +45,33 @@ def save_word_index(tokenizer, filename):
     word_index = tokenizer.word_index
     with open(filename, 'w') as f:
         json.dump(word_index, f, indent=4)
+
+
+def train_and_evaluate_model(
+    model,
+    train_padded_data,
+    train_labels,
+    test_padded_data,
+    test_labels,
+    epochs,
+):
+    # Train model
+    model.train_model(
+        train_padded_data,
+        train_labels,
+        test_padded_data,
+        test_labels,
+        epochs=epochs,
+    )
+    f1score, report = model.evaluate_model(test_padded_data, test_labels)
+
+    line = '----------------------------------------'
+    logger.debug(f'{line}{model.__name__}{line}')
+    logger.debug(f'Epochs: {epochs}')
+    logger.debug(f'F1-score: {f1score}')
+    logger.debug(f'Classification Report:\n{report}')
+
+    return f1score, report
 
 
 def main():
@@ -127,48 +158,33 @@ def main():
             if emb_vec is not None:
                 embedding_matrix[i] = emb_vec
 
+    models = []
     if args.train_ffnn:
-        # Create model
-        model = FFNN(num_words, max_len, EMBEDDING_DIM, embedding_matrix)
-
-        # Train model
-        history = model.train_model(
-            train_padded_data,
-            train_labels,
-            test_padded_data,
-            test_labels,
-            epochs=EPOCHS,
-        )
-        f1score, report = model.evaluate_model(test_padded_data, test_labels)
-
-        print("F1-score:", f1score)
-        print("Classification Report:")
-        print(report)
+        # Create FFNN model
+        models.append(FFNN(num_words, max_len, EMBEDDING_DIM, embedding_matrix))
 
     if args.lstm_train:
-        model = LSTM(
-            num_words,
-            max_len,
-            EMBEDDING_DIM,
-            embedding_matrix,
-            drop_rate=0.5,
+        # Create LSTM model
+        models.append(
+            LSTM(
+                num_words,
+                max_len,
+                EMBEDDING_DIM,
+                embedding_matrix,
+                drop_rate=0.2,
+            )
         )
 
-        # Train model
-        history = model.train_model(
+    for model in models:
+        f1score, report = train_and_evaluate_model(
+            model,
             train_padded_data,
             train_labels,
             test_padded_data,
             test_labels,
             epochs=EPOCHS,
         )
-        f1score, report = model.evaluate_model(test_padded_data, test_labels)
-
-        print()
-        print("F1-score:", f1score)
-        print("Classification Report:")
-        print(report)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
