@@ -22,7 +22,7 @@ def parse_arguments():
 args = parse_arguments()
 
 current_dir = os.getcwd()
-#Switch between train and test dataset and columns
+# Switch between train and test dataset and columns
 if args.dataset == 'train':
     dataset_file = os.path.join(current_dir, 'train', 'train.En.csv')
     target_columns = ['tweet', 'sarcastic', 'rephrase', 'sarcasm', 'irony', 'satire', 'understatement', 'overstatement',
@@ -93,7 +93,8 @@ def preprocess_dataset_with_emojis(dataset, emoji_to_text):
 preprocessed_data_with_emojis = preprocess_dataset_with_emojis(text_dataset, emoji_to_text)
 
 # Save output file
-output_file_with_emojis_path = 'output_file.txt'
+data_folder = os.path.join(current_dir, 'data')
+output_file_with_emojis_path = os.path.join(data_folder, 'output_file.txt')
 with open(output_file_with_emojis_path, 'w', encoding='utf-8') as output_file_with_emojis:
     for entry in preprocessed_data_with_emojis:
         print(entry, file=output_file_with_emojis)
@@ -125,9 +126,9 @@ preprocessed_data_with_embeddings = apply_pretrained_embeddings(preprocessed_dat
 
 # Save output file
 if args.dataset == 'train':
-    output_file_path = 'prep_train.json'
+    output_file_path = os.path.join(data_folder, 'prep_train.json')
 elif args.dataset == 'test':
-    output_file_path = 'prep_test.json'
+    output_file_path = os.path.join(data_folder, 'prep_test.json')
 else:
     print("Invalid dataset argument. Please use --dataset train or --dataset test.")
     exit(1)
