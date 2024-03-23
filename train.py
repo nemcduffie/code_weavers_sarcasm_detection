@@ -5,8 +5,9 @@ import logging
 
 from keras.preprocessing.text import Tokenizer
 from keras.utils import pad_sequences
-from models.lstm import LSTM
+from models.lstm import LSTM, LSTMWithAttention
 from models.ffnn import FFNN
+from models.svm import SVM
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -16,7 +17,7 @@ EMBEDDING_PATH = './glove.twitter.27B/glove.twitter.27B.200d.txt'
 TRAIN_DATA_PATH = './prep_train.json'
 TEST_DATA_PATH = './prep_test.json'
 EMBEDDING_DIM = 200
-EPOCHS = 20
+EPOCHS = 25
 
 
 # Maximun length function
@@ -84,8 +85,8 @@ def main():
     )
     parser.add_argument(
         '--train_svm',
-        dest='lstm_train',
-        help='Train LSTM model',
+        dest='train_svm',
+        help='Train SVM model',
         action='store_true',
     )
     parser.add_argument(
@@ -174,6 +175,22 @@ def main():
                 drop_rate=0.2,
             )
         )
+
+    if args.train_lstm_attention:
+        # Create LSTM model with attention
+        models.append(
+            LSTMWithAttention(
+                num_words,
+                max_len,
+                EMBEDDING_DIM,
+                embedding_matrix,
+                drop_rate=0.2,
+            )
+        )
+
+    if args.train_svm:
+        svm_model = SVM(TRAIN_DATA_PATH, TEST_DATA_PATH)
+        svm_model.train_and_evaluate()
 
     for model in models:
         f1score, report = train_and_evaluate_model(
