@@ -25,6 +25,7 @@ class FFNN(nn.Module):
         self.model.add(
             keras.layers.Dense(63, activation='relu')
         )  # First hidden layer
+        self.model.add(keras.layers.Dropout(0.3))
         self.model.add(
             keras.layers.Dense(32, activation='tanh')
         )  # Second hidden layer
@@ -42,7 +43,7 @@ class FFNN(nn.Module):
         train_labels,
         val_data,
         val_labels,
-        epochs=20,
+        epochs=25,
         verbose=1,
     ):
         return self.model.fit(
