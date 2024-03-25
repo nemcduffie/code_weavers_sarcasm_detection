@@ -1,9 +1,8 @@
 numpy
 pandas
 torch
-torchvision
 demoji
 nltk
 unidecode
 keras==2.15.0
-tensorflow
+tensorflow==2.15.1

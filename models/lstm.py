@@ -4,7 +4,6 @@ from sklearn.metrics import (
     f1_score,
 )
 
-
 from keras.models import Sequential
 from keras.layers import LSTM as KerasLSTM
 from keras.layers import Dense, Embedding, Dropout, Bidirectional, Attention
@@ -21,9 +20,11 @@ class LSTM(nn.Module):
         max_len,
         embedding_dim,
         embedding_matrix,
-        drop_rate=0.3,
+        drop_rate=0.25,
     ):
+        # Define initial model
         self.model = Sequential()
+        # Add embedding layer with predefined matrix
         self.model.add(
             Embedding(
                 input_dim=num_words,
@@ -33,18 +34,20 @@ class LSTM(nn.Module):
                 trainable=False,
             )
         )
+        # Add Bidirectional LSTM
         self.model.add(
             Bidirectional(
                 KerasLSTM(
                     units=embedding_dim,
                     dropout=drop_rate,
+                    use_bias=True,
                 )
             )
         )
-
-        self.model.add(Dense(40, activation='relu'))
+        self.model.add(Dense(128, activation='relu'))
         self.model.add(Dropout(drop_rate))
-        self.model.add(Dense(20))
+        self.model.add(Dense(64))
+        self.model.add(Dropout(drop_rate))
         self.model.add(Dense(1, activation='sigmoid'))
         self.model.compile(
             optimizer='adam',
@@ -59,14 +62,15 @@ class LSTM(nn.Module):
         train_labels,
         val_data,
         val_labels,
-        epochs=20,
+        epochs=25,
         verbose=1,
+        class_weight={0: 1, 1: 2},
     ):
         return self.model.fit(
             train_data,
             train_labels,
             epochs=epochs,
-            class_weight={0: 1, 1: 60},
+            class_weight=class_weight,
             validation_data=(val_data, val_labels),
             verbose=verbose,
         )
@@ -80,7 +84,7 @@ class LSTM(nn.Module):
         )  # Convert the probabilities into binary predictions
 
         # Calculate F1-score
-        f1score = f1_score(test_labels, predictions, average='macro')
+        f1score = f1_score(test_labels, predictions)
 
         # Classification report
         report = classification_report(test_labels, predictions)
@@ -113,6 +117,7 @@ class LSTMWithAttention(LSTM):
         # Add dropout layer
         self.dropout = Dropout(drop_rate)
 
+    # Forward pass function
     def forward(self, x):
         # Pass input through embedding layer
         embedded = self.model.layers[0](x)
@@ -132,14 +137,15 @@ class LSTMWithAttention(LSTM):
         # Return output after passing through fully connected layers
         return self.model.layers[2](attended_output)
 
+    # Train model function
     def train_model(
-            self,
-            train_data,
-            train_labels,
-            val_data,
-            val_labels,
-            epochs=20,
-            verbose=1,
+        self,
+        train_data,
+        train_labels,
+        val_data,
+        val_labels,
+        epochs=25,
+        verbose=1,
     ):
         return super().train_model(
             train_data,
@@ -150,5 +156,6 @@ class LSTMWithAttention(LSTM):
             verbose=verbose,
         )
 
+    # Evaluation function
     def evaluate_model(self, test_data, test_labels):
         return super().evaluate_model(test_data, test_labels)
