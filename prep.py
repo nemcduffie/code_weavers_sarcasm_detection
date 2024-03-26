@@ -33,43 +33,6 @@ def parse_arguments():
     return parser.parse_args()
 
 
-args = parse_arguments()
-
-# Switch between train and test dataset and columns
-if args.dataset == 'train':
-    dataset_file = os.path.join(DATA_DIR, 'train', 'train.En.csv')
-    target_columns = [
-        'tweet',
-        'sarcastic',
-        'rephrase',
-        'sarcasm',
-        'irony',
-        'satire',
-        'understatement',
-        'overstatement',
-        'rhetorical_question',
-    ]
-elif args.dataset == 'test':
-    dataset_file = os.path.join(DATA_DIR, 'test', 'task_A_En_test.csv')
-    target_columns = ['text', 'sarcastic']
-else:
-    print(
-        "Invalid dataset argument. Please use --dataset train or --dataset test."
-    )
-    exit(1)
-
-
-# Load data
-text_dataset = load_csv(dataset_file)
-
-emoji_dataset = load_csv(os.path.join(DATA_DIR, "emoji_and_abbr/emoji_df.csv"))
-
-print(type(emoji_dataset))
-
-# Map emojis to text labels
-emoji_to_text = dict(zip(emoji_dataset['emoji'], emoji_dataset['name']))
-
-
 def preprocess_text_with_emojis(text, emoji_to_text):
     # Remove usernames
     text = re.sub(r'@\S+', '', text)
@@ -115,7 +78,7 @@ def preprocess_text_with_emojis(text, emoji_to_text):
     return token_list
 
 
-def preprocess_dataset_with_emojis(dataset, emoji_to_text):
+def preprocess_dataset_with_emojis(dataset, emoji_to_text, target_columns):
     preprocessed_dataset = []
 
     for index, row in dataset.iterrows():
@@ -132,34 +95,12 @@ def preprocess_dataset_with_emojis(dataset, emoji_to_text):
     return preprocessed_dataset
 
 
-# Preprocess dataset with emojis
-preprocessed_data_with_emojis = preprocess_dataset_with_emojis(
-    text_dataset, emoji_to_text
-)
-
-# Save output file
-output_file_with_emojis_path = os.path.join(DATA_DIR, 'output_file.txt')
-with open(
-    output_file_with_emojis_path, 'w', encoding='utf-8'
-) as output_file_with_emojis:
-    for entry in preprocessed_data_with_emojis:
-        print(entry, file=output_file_with_emojis)
-
-print(f"Output saved to {output_file_with_emojis_path}")
-
-
 def apply_pretrained_embeddings(dataset, vocab_dict):
     for entry in dataset:
         entry['text_with_embeddings'] = [
             vocab_dict.get(token, [0]) for token in entry['text_with_emojis']
         ]
     return dataset
-
-
-# Preprocess dataset with emojis
-preprocessed_data_with_emojis = preprocess_dataset_with_emojis(
-    text_dataset, emoji_to_text
-)
 
 
 def load_embedding(embedding_file):
@@ -173,25 +114,73 @@ def load_embedding(embedding_file):
     return vocab_dict
 
 
-# Apply pretrained embeddings
-embedding_file = 'glove.twitter.27B/glove.twitter.27B.200d.txt'
-vocab_dict = load_embedding(embedding_file)
-preprocessed_data_with_embeddings = apply_pretrained_embeddings(
-    preprocessed_data_with_emojis, vocab_dict
-)
+def main():
 
-# Save output file
-if args.dataset == 'train':
-    output_file_path = os.path.join(DATA_DIR, 'prep_train.json')
-elif args.dataset == 'test':
-    output_file_path = os.path.join(DATA_DIR, 'prep_test.json')
-else:
-    print(
-        "Invalid dataset argument. Please use --dataset train or --dataset test."
-    )
-    exit(1)
+    args = parse_arguments()
 
-with open(output_file_path, 'w', encoding='utf-8') as output_file:
-    json.dump(
-        preprocessed_data_with_embeddings, output_file, ensure_ascii=False
+    # Switch between train and test dataset and columns
+    if args.dataset == 'train':
+        dataset_file = os.path.join(DATA_DIR, 'train', 'train.En.csv')
+        target_columns = [
+            'tweet',
+            'sarcastic',
+            'rephrase',
+            'sarcasm',
+            'irony',
+            'satire',
+            'understatement',
+            'overstatement',
+            'rhetorical_question',
+        ]
+        output_file_path = os.path.join(DATA_DIR, 'prep_train.json')
+
+    elif args.dataset == 'test':
+        dataset_file = os.path.join(DATA_DIR, 'test', 'task_A_En_test.csv')
+        target_columns = ['text', 'sarcastic']
+        output_file_path = os.path.join(DATA_DIR, 'prep_test.json')
+
+    else:
+        print(
+            "Invalid dataset argument. Please use --dataset train or --dataset test."
+        )
+        exit(1)
+
+    # Load data
+    text_dataset = load_csv(dataset_file)
+    emoji_dataset = load_csv(
+        os.path.join(DATA_DIR, "emoji_and_abbr/emoji_df.csv")
     )
+
+    # Map emojis to text labels
+    emoji_to_text = dict(zip(emoji_dataset['emoji'], emoji_dataset['name']))
+
+    # Preprocess dataset with emojis
+    preprocessed_data_with_emojis = preprocess_dataset_with_emojis(
+        text_dataset, emoji_to_text, target_columns
+    )
+
+    # Save output file
+    output_file_with_emojis_path = os.path.join(DATA_DIR, 'output_file.txt')
+    with open(
+        output_file_with_emojis_path, 'w', encoding='utf-8'
+    ) as output_file_with_emojis:
+        for entry in preprocessed_data_with_emojis:
+            print(entry, file=output_file_with_emojis)
+
+    print(f"Output saved to {output_file_with_emojis_path}")
+
+    # Apply pretrained embeddings
+    embedding_file = 'glove.twitter.27B/glove.twitter.27B.200d.txt'
+    vocab_dict = load_embedding(embedding_file)
+    preprocessed_data_with_embeddings = apply_pretrained_embeddings(
+        preprocessed_data_with_emojis, vocab_dict
+    )
+
+    with open(output_file_path, 'w', encoding='utf-8') as output_file:
+        json.dump(
+            preprocessed_data_with_embeddings, output_file, ensure_ascii=False
+        )
+
+
+if __name__ == '__main__':
+    main()
