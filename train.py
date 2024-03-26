@@ -14,8 +14,8 @@ logger.setLevel(logging.INFO)
 logging.basicConfig(filename='train.log', level=logging.INFO)
 
 EMBEDDING_PATH = './glove.twitter.27B/glove.twitter.27B.200d.txt'
-TRAIN_DATA_PATH = './prep_train.json'
-TEST_DATA_PATH = './prep_test.json'
+TRAIN_DATA_PATH = './data/prep_train.json'
+TEST_DATA_PATH = './data/prep_test.json'
 EMBEDDING_DIM = 200
 EPOCHS = 25
 
