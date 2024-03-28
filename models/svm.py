@@ -39,12 +39,14 @@ class SVM:
         f1 = f1_score(self.y_test, y_pred)
         accuracy = accuracy_score(self.y_test, y_pred)
 
-        line = '----------------------------------------'
-        print(f'{line}SVM{line}')
-
-        print(f"F1-Score: {f1}")
-        print(f"Accuracy: {accuracy}")
-
-        # Additional metrics and classification report
-        print("\nClassification Report:")
-        print(classification_report(self.y_test, y_pred))
+        output = '\n'.join(
+            [
+                f'{"-"*40}SVM{"-"*40}',
+                f'F1-Score: {f1}',
+                f'Accuracy: {accuracy}',
+                # Additional metrics and classification report
+                '\nClassification Report:',
+                classification_report(self.y_test, y_pred),
+            ]
+        )
+        return output

@@ -113,19 +113,18 @@ def train_and_evaluate_model(
     # Evaluate model and collect f1score and classification report
     f1score, report = model.evaluate_model(test_padded_data, test_labels)
 
-    line = '----------------------------------------'
-    if VERBOSE == 0:
-        # Print results
-        print(f'{line}{model.__name__}{line}')
-        print(f'Epochs: {epochs}')
-        print(f'F1-score: {f1score}')
-        print(f'Classification Report:\n{report}')
-    else:
-        # Save evaluation results to log file
-        logger.info(f'{line}{model.__name__}{line}')
-        logger.info(f'Epochs: {epochs}')
-        logger.info(f'F1-score: {f1score}')
-        logger.info(f'Classification Report:\n{report}')
+    output = '\n'.join(
+        [
+            f'{"-"*40}{model.__name__}{"-"*40}',
+            f'Epochs: {epochs}',
+            f'F1-score: {f1score}',
+            f'Classification Report:\n{report}',
+        ]
+    )
+    # Print results
+    print(output)
+    # Save evaluation results to log file
+    logger.info(output)
 
 
 def main():
@@ -217,7 +216,11 @@ def main():
         # Create SVM model
         svm_model = SVM(TRAIN_DATA_PATH, TEST_DATA_PATH)
         # Tain and evaluate model
-        svm_model.train_and_evaluate()
+        output = svm_model.train_and_evaluate()
+        # Print results
+        print(output)
+        # Save evaluation results to log file
+        logger.info(output)
 
 
 if __name__ == '__main__':
