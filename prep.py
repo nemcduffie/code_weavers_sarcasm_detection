@@ -2,7 +2,7 @@ import pandas as pd
 import re, string, nltk, json, argparse, os
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-from abbr_data import abbreviations
+from data.abbr_data import abbreviations
 
 import demoji
 
@@ -11,8 +11,7 @@ demoji.download_codes()
 nltk.download('punkt')
 nltk.download('stopwords')
 
-CURRENT_DIR = os.getcwd()
-DATA_DIR = os.path.join(CURRENT_DIR, 'data')
+DATA_DIR = os.path.join(os.getcwd(), 'data')
 
 
 # Load data
@@ -114,12 +113,10 @@ def load_embedding(embedding_file):
     return vocab_dict
 
 
-def main():
-
-    args = parse_arguments()
+def main(dataset):
 
     # Switch between train and test dataset and columns
-    if args.dataset == 'train':
+    if dataset == 'train':
         dataset_file = os.path.join(DATA_DIR, 'train', 'train.En.csv')
         target_columns = [
             'tweet',
@@ -134,7 +131,7 @@ def main():
         ]
         output_file_path = os.path.join(DATA_DIR, 'prep_train.json')
 
-    elif args.dataset == 'test':
+    elif dataset == 'test':
         dataset_file = os.path.join(DATA_DIR, 'test', 'task_A_En_test.csv')
         target_columns = ['text', 'sarcastic']
         output_file_path = os.path.join(DATA_DIR, 'prep_test.json')
@@ -170,7 +167,7 @@ def main():
     print(f"Output saved to {output_file_with_emojis_path}")
 
     # Apply pretrained embeddings
-    embedding_file = 'glove.twitter.27B/glove.twitter.27B.200d.txt'
+    embedding_file = './data/glove.twitter.27B/glove.twitter.27B.200d.txt'
     vocab_dict = load_embedding(embedding_file)
     preprocessed_data_with_embeddings = apply_pretrained_embeddings(
         preprocessed_data_with_emojis, vocab_dict
@@ -183,4 +180,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    args = parse_arguments()
+    main(args.dataset)

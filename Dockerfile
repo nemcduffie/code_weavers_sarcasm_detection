@@ -1,8 +1,11 @@
-FROM python:3.8-slim
+FROM python:3.11-slim
 
+WORKDIR /src
 ENV PYTHONUNBUFFERED 1
+ENV PORT 80
 
-COPY ./requirements.txt /requirements.txt
+COPY . /src
+COPY ./data/ /src/data/
 
 RUN apt-get update
 RUN apt-get install sudo -y build-essential \
@@ -11,9 +14,3 @@ RUN apt-get install sudo -y build-essential \
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN apt-get clean
-
-RUN mkdir /src
-WORKDIR /src
-COPY ./src /src
-RUN adduser user
-USER user

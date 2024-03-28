@@ -13,11 +13,12 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logging.basicConfig(filename='train.log', level=logging.INFO)
 
-EMBEDDING_PATH = './glove.twitter.27B/glove.twitter.27B.200d.txt'
+EMBEDDING_PATH = './data/glove.twitter.27B/glove.twitter.27B.200d.txt'
 TRAIN_DATA_PATH = './data/prep_train.json'
 TEST_DATA_PATH = './data/prep_test.json'
 EMBEDDING_DIM = 200
 EPOCHS = 25
+VERBOSE = 0
 
 
 # Function to load and organise data
@@ -106,45 +107,36 @@ def train_and_evaluate_model(
         test_padded_data,
         test_labels,
         epochs=epochs,
+        verbose=VERBOSE,
     )
 
     # Evaluate model and collect f1score and classification report
     f1score, report = model.evaluate_model(test_padded_data, test_labels)
 
-    # Save evaluation results to log file
     line = '----------------------------------------'
-    logger.info(f'{line}{model.__name__}{line}')
-    logger.info(f'Epochs: {epochs}')
-    logger.info(f'F1-score: {f1score}')
-    logger.info(f'Classification Report:\n{report}')
+    if VERBOSE == 0:
+        # Print results
+        print(f'{line}{model.__name__}{line}')
+        print(f'Epochs: {epochs}')
+        print(f'F1-score: {f1score}')
+        print(f'Classification Report:\n{report}')
+    else:
+        # Save evaluation results to log file
+        logger.info(f'{line}{model.__name__}{line}')
+        logger.info(f'Epochs: {epochs}')
+        logger.info(f'F1-score: {f1score}')
+        logger.info(f'Classification Report:\n{report}')
 
 
 def main():
     parser = argparse.ArgumentParser(description='Train Models')
 
     parser.add_argument(
-        '--train_ffnn',
-        dest='train_ffnn',
-        help='Train FFNN model',
-        action='store_true',
-    )
-    parser.add_argument(
-        '--train_svm',
-        dest='train_svm',
-        help='Train SVM model',
-        action='store_true',
-    )
-    parser.add_argument(
-        '--train_lstm',
-        dest='lstm_train',
-        help='Train LSTM model',
-        action='store_true',
-    )
-    parser.add_argument(
-        '--train_lstm_attention',
-        dest='train_lstm_attention',
-        help='Train LSTM model with attention',
-        action='store_true',
+        '--train',
+        dest='train',
+        help='Model to train',
+        choices=['ffnn', 'lstm', 'lstm_attention', 'svm'],
+        action='append',
     )
 
     # Option to save word indx to a file
@@ -183,11 +175,11 @@ def main():
     num_words, embedding_matrix = get_embedding_matrix(tokenizer)
 
     models = []
-    if args.train_ffnn:
+    if args.train == None or 'ffnn' in args.train:
         # Create FFNN model
         models.append(FFNN(num_words, max_len, EMBEDDING_DIM, embedding_matrix))
 
-    if args.lstm_train:
+    if args.train == None or 'lstm' in args.train:
         # Create LSTM model
         models.append(
             LSTM(
@@ -198,7 +190,7 @@ def main():
             )
         )
 
-    if args.train_lstm_attention:
+    if args.train == None or 'lstm_attention' in args.train:
         # Create LSTM model with attention
         models.append(
             LSTMWithAttention(
@@ -221,7 +213,7 @@ def main():
             epochs=EPOCHS,
         )
 
-    if args.train_svm:
+    if args.train == None or 'svm' in args.train:
         # Create SVM model
         svm_model = SVM(TRAIN_DATA_PATH, TEST_DATA_PATH)
         # Tain and evaluate model

@@ -4,5 +4,7 @@ torch
 demoji
 nltk
 unidecode
+scikit-learn
+chakin
 keras==2.15.0
 tensorflow==2.15.1
