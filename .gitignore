@@ -8,3 +8,6 @@ output_file.txt
 prep_test.json
 prep_train.json
 train.log
+data/prep_test.json
+data/prep_train.json
+data/output_file.txt
