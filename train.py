@@ -110,7 +110,7 @@ def train_and_evaluate_model(
         verbose=VERBOSE,
     )
 
-    # Evaluate model and collect f1score and classification report
+    # Evaluate model and collect f1 score and classification report
     f1score, report = model.evaluate_model(test_padded_data, test_labels)
 
     output = '\n'.join(

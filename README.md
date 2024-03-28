@@ -17,14 +17,17 @@ To run individual models set the following environment variables to True:
 
     # Run build if you haven't already done so
     docker-compos build
-    # Run container with certain parameters set
-    docker run -p 8000:8000 -e LSTM=True FFNN=True code_weavers_sarcasm_detection-app:latest python download_embeddings.py
+    # Run container with chosen models set to True
+    LSTM=True FFNN=True docker up
 
 
 You can also set `SAVE_WORD_INDEX` to True if you would like the word indexed saved to a json file like so:
 
-    docker run -p 8000:8000 -e SAVE_WORD_INDEX=True FFNN=True code_weavers_sarcasm_detection-app:latest python download_embeddings.py
+    SAVE_WORD_INDEX=True FFNN=True docker run up
 
+
+
+### To run the models loacally (ideallpy with Python 3.11) :
 
 To install requirements:
 
@@ -37,10 +40,9 @@ To run data preprocessing:
 
 To run the individual training scripts:
 
-    python train.py --train_ffnn
-    python train.py --train_svm
-    python train.py --train_lstm
-    python train.py --train_lstm_attention
+    python train.py --train ffnn
+    python train.py --train svm
+    python train.py --train lstm
     python train.py --train lstm_attention
 
 To have the word index saved to a json file, use `--save_word_index` like the following:
