@@ -59,7 +59,7 @@ def padding_data(sentences, max_len, tokenizer):
 
 
 # Saving word index
-def save_word_index(tokenizer, filename):
+def save_word_index_file(tokenizer, filename):
     word_index = tokenizer.word_index
     with open(filename, 'w') as f:
         json.dump(word_index, f, indent=4)
@@ -127,27 +127,7 @@ def train_and_evaluate_model(
     logger.info(output)
 
 
-def main():
-    parser = argparse.ArgumentParser(description='Train Models')
-
-    parser.add_argument(
-        '--train',
-        dest='train',
-        help='Model to train',
-        choices=['ffnn', 'lstm', 'lstm_attention', 'svm'],
-        action='append',
-    )
-
-    # Option to save word indx to a file
-    parser.add_argument(
-        '--save_word_index',
-        dest='save_word_index',
-        help='Flag to save generated word index to file',
-        action='store_true',
-    )
-
-    args = parser.parse_args()
-
+def main(train=None, save_word_index=False):
     # Load and organise data into train and test
     train_sentences, train_labels = load_data(TRAIN_DATA_PATH)
     test_sentences, test_labels = load_data(TEST_DATA_PATH)
@@ -167,18 +147,18 @@ def main():
     test_padded_data = padding_data(test_sentences, max_len, tokenizer)
 
     # Save word index to file if requested by user
-    if args.save_word_index:
-        save_word_index(tokenizer, 'tokenizer_word_index.json')
+    if save_word_index:
+        save_word_index_file(tokenizer, 'tokenizer_word_index.json')
 
     # Create embedding matrix for models
     num_words, embedding_matrix = get_embedding_matrix(tokenizer)
 
     models = []
-    if args.train == None or 'ffnn' in args.train:
+    if train == None or 'ffnn' in train:
         # Create FFNN model
         models.append(FFNN(num_words, max_len, EMBEDDING_DIM, embedding_matrix))
 
-    if args.train == None or 'lstm' in args.train:
+    if train == None or 'lstm' in train:
         # Create LSTM model
         models.append(
             LSTM(
@@ -189,7 +169,7 @@ def main():
             )
         )
 
-    if args.train == None or 'lstm_attention' in args.train:
+    if train == None or 'lstm_attention' in train:
         # Create LSTM model with attention
         models.append(
             LSTMWithAttention(
@@ -212,7 +192,7 @@ def main():
             epochs=EPOCHS,
         )
 
-    if args.train == None or 'svm' in args.train:
+    if train == None or 'svm' in train:
         # Create SVM model
         svm_model = SVM(TRAIN_DATA_PATH, TEST_DATA_PATH)
         # Tain and evaluate model
@@ -224,4 +204,23 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Train Models')
+
+    parser.add_argument(
+        '--train',
+        dest='train',
+        help='Model to train',
+        choices=['ffnn', 'lstm', 'lstm_attention', 'svm'],
+        action='append',
+    )
+
+    # Option to save word indx to a file
+    parser.add_argument(
+        '--save_word_index',
+        dest='save_word_index',
+        help='Flag to save generated word index to file',
+        action='store_true',
+    )
+
+    args = parser.parse_args()
+    main(args.train, args.save_word_index)

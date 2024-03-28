@@ -6,5 +6,11 @@ services:
       context: .
     ports:
       - "8000:8000"
+    environment:
+      FFNN: ${FFNN:-False}
+      LSTM: ${LSTM:-False}
+      LSTM_ATTENTION: ${LSTM_ATTENTION:-False}
+      SVM: ${SVM:-False}
+      SAVE_WORD_INDEX: ${SAVE_WORD_INDEX:-False}
     command: >
       sh -c "python download_embedding.py"

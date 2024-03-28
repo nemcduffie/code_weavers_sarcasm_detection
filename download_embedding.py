@@ -6,6 +6,11 @@ from train import main as main_train
 
 import os
 
+SAVE_WORD_INDEX = os.getenv('SAVE_WORD_INDEX', False)
+MODELS = []
+for model in ['ffnn', 'lstm', 'lstm_attention', 'svm']:
+    if os.getenv(model.upper(), False):
+        MODELS.append(model)
 
 DATA_DIR = './data'
 
@@ -16,42 +21,46 @@ SUBDIR_NAME = 'glove.twitter.27B'
 ZIP_FILE = os.path.join(DATA_DIR, f'{SUBDIR_NAME}.zip')
 UNZIP_DIR = os.path.join(DATA_DIR, SUBDIR_NAME)
 
-if SUBDIR_NAME[-1] == 'd':
-    GLOVE_FILENAME = os.path.join(UNZIP_DIR, f'{SUBDIR_NAME}.txt')
-else:
-    GLOVE_FILENAME = os.path.join(
-        UNZIP_DIR, f'{SUBDIR_NAME}.{NUMBER_OF_DIMENSIONS}d.txt'
-    )
 
-if not os.path.exists(ZIP_FILE) and not os.path.exists(UNZIP_DIR):
-    # GloVe by Stanford is licensed Apache 2.0:
-    #     https://github.com/stanfordnlp/GloVe/blob/master/LICENSE
-    #     http://nlp.stanford.edu/data/glove.twitter.27B.zip
-    #     Copyright 2014 The Board of Trustees of The Leland Stanford Junior University
-    print(f'Downloading embeddings to {ZIP_FILE}')
-    chakin.download(number=CHAKIN_INDEX, save_dir=DATA_DIR)
-else:
-    print('Embeddings already downloaded.')
+def main():
+    if SUBDIR_NAME[-1] == 'd':
+        GLOVE_FILENAME = os.path.join(UNZIP_DIR, f'{SUBDIR_NAME}.txt')
+    else:
+        GLOVE_FILENAME = os.path.join(
+            UNZIP_DIR, f'{SUBDIR_NAME}.{NUMBER_OF_DIMENSIONS}d.txt'
+        )
 
-if not os.path.exists(UNZIP_DIR):
-    import zipfile
+    if not os.path.exists(ZIP_FILE) and not os.path.exists(UNZIP_DIR):
+        # GloVe by Stanford is licensed Apache 2.0:
+        #     https://github.com/stanfordnlp/GloVe/blob/master/LICENSE
+        #     http://nlp.stanford.edu/data/glove.twitter.27B.zip
+        #     Copyright 2014 The Board of Trustees of The Leland Stanford Junior University
+        print(f'Downloading embeddings to {ZIP_FILE}')
+        chakin.download(number=CHAKIN_INDEX, save_dir=DATA_DIR)
+    else:
+        print('Embeddings already downloaded.')
 
-    with zipfile.ZipFile(ZIP_FILE, 'r') as zip_ref:
-        print(f'Extracting embeddings to {UNZIP_DIR}')
-        zip_ref.extractall(UNZIP_DIR)
+    if not os.path.exists(UNZIP_DIR):
+        import zipfile
 
-    if os.path.exists(GLOVE_FILENAME):
-        for file in [
-            'glove.twitter.27B.25d.txt',
-            'glove.twitter.27B.50d.txt',
-            'glove.twitter.27B.100d.txt',
-        ]:
-            os.remove(os.path.join(UNZIP_DIR, file))
-        os.remove(ZIP_FILE)
-else:
-    print('Embeddings already extracted.')
+        with zipfile.ZipFile(ZIP_FILE, 'r') as zip_ref:
+            print(f'Extracting embeddings to {UNZIP_DIR}')
+            zip_ref.extractall(UNZIP_DIR)
 
-main_prep('train')
-main_prep('test')
-main_train()
+        if os.path.exists(GLOVE_FILENAME):
+            for file in [
+                'glove.twitter.27B.25d.txt',
+                'glove.twitter.27B.50d.txt',
+                'glove.twitter.27B.100d.txt',
+            ]:
+                os.remove(os.path.join(UNZIP_DIR, file))
+            os.remove(ZIP_FILE)
+    else:
+        print('Embeddings already extracted.')
 
+
+if __name__ == '__main__':
+    main()
+    main_prep('test')
+    main_prep('train')
+    main_train(MODELS, SAVE_WORD_INDEX)
