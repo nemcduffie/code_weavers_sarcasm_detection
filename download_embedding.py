@@ -6,10 +6,10 @@ from train import main as main_train
 
 import os
 
-SAVE_WORD_INDEX = os.getenv('SAVE_WORD_INDEX', False)
+SAVE_WORD_INDEX = bool(os.getenv('SAVE_WORD_INDEX', 0))
 MODELS = []
 for model in ['ffnn', 'lstm', 'lstm_attention', 'svm']:
-    if os.getenv(model.upper(), False):
+    if bool(os.getenv(model.upper(), 0)):
         MODELS.append(model)
 
 DATA_DIR = './data'

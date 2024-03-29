@@ -4,7 +4,7 @@
 
 To run all four models in a docker conatiner:
 
-    docker-compos build && docker-compose up
+    docker-compose build && docker-compose up
 
 Same commands but with DEBUG enabled:
 
@@ -18,12 +18,12 @@ To run individual models set the following environment variables to True:
     # Run build if you haven't already done so
     docker-compos build
     # Run container with chosen models set to True
-    LSTM=True FFNN=True docker up
+    LSTM=1 FFNN=1 docker up
 
 
 You can also set `SAVE_WORD_INDEX` to True if you would like the word indexed saved to a json file like so:
 
-    SAVE_WORD_INDEX=True FFNN=True docker run up
+    SAVE_WORD_INDEX=1 FFNN=1 docker run up
 
 
 

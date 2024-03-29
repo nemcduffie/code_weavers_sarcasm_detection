@@ -7,10 +7,10 @@ services:
     ports:
       - "8000:8000"
     environment:
-      FFNN: ${FFNN:-False}
-      LSTM: ${LSTM:-False}
-      LSTM_ATTENTION: ${LSTM_ATTENTION:-False}
-      SVM: ${SVM:-False}
-      SAVE_WORD_INDEX: ${SAVE_WORD_INDEX:-False}
+      FFNN: ${FFNN:-0}
+      LSTM: ${LSTM:-0}
+      LSTM_ATTENTION: ${LSTM_ATTENTION:-0}
+      SVM: ${SVM:-0}
+      SAVE_WORD_INDEX: ${SAVE_WORD_INDEX:-0}
     command: >
       sh -c "python download_embedding.py"
