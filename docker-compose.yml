@@ -13,4 +13,4 @@ services:
       SVM: ${SVM:-0}
       SAVE_WORD_INDEX: ${SAVE_WORD_INDEX:-0}
     command: >
-      sh -c "python download_embedding.py"
+      sh -c "python main.py"
