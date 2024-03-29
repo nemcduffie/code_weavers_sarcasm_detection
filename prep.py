@@ -4,10 +4,6 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from data.abbr_data import abbreviations
 
-import demoji
-
-demoji.download_codes()
-
 nltk.download('punkt')
 nltk.download('stopwords')
 

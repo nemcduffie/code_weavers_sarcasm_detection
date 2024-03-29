@@ -1,7 +1,6 @@
 numpy
 pandas
 torch
-demoji
 nltk
 unidecode
 scikit-learn

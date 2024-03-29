@@ -1,20 +1,21 @@
 import numpy as np
 import tensorflow as tf
 import chakin
+import os
+
 from prep import main as main_prep
 from train import main as main_train
 
-import os
 
-SAVE_WORD_INDEX = bool(os.getenv('SAVE_WORD_INDEX', 0))
+SAVE_WORD_INDEX = os.getenv('SAVE_WORD_INDEX', '0') == '1'
 MODELS = []
 for model in ['ffnn', 'lstm', 'lstm_attention', 'svm']:
-    if bool(os.getenv(model.upper(), 0)):
+    if os.getenv(model.upper(), '0') == '1':
         MODELS.append(model)
 
 DATA_DIR = './data'
 
-CHAKIN_INDEX = 17
+CHAKIN_INDEX = 20
 NUMBER_OF_DIMENSIONS = 200
 SUBDIR_NAME = 'glove.twitter.27B'
 
