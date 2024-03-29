@@ -3,9 +3,6 @@ import tensorflow as tf
 import chakin
 import os
 
-from prep import main as main_prep
-from train import main as main_train
-
 DATA_DIR = './data'
 
 CHAKIN_INDEX = 20

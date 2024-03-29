@@ -12,6 +12,9 @@ RUN apt-get install sudo -y build-essential \
     python3-dev
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY download_embedding.py /src/download_embedding.py
+RUN python download_embedding.py
+
 COPY . /src
 COPY ./data/ /src/data/
 
