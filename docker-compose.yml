@@ -14,4 +14,3 @@ services:
       SAVE_WORD_INDEX: ${SAVE_WORD_INDEX:-0}
     command: >
       sh -c "python main.py"
-    mem_limit: 4g

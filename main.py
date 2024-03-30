@@ -1,6 +1,5 @@
 import numpy as np
 import tensorflow as tf
-import chakin
 import os
 
 from prep import main as main_prep
@@ -16,8 +15,8 @@ for model in ['ffnn', 'lstm', 'lstm_attention', 'svm']:
 
 def main():
     main_prep('test')
-    main_prep('train_extra' if TRAIN_EXTRA else 'train')
-    main_train(MODELS, SAVE_WORD_INDEX)
+    main_prep('train')
+    main_train(MODELS or None, SAVE_WORD_INDEX)
 
 
 if __name__ == '__main__':

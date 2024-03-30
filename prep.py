@@ -1,8 +1,14 @@
+import sys
 import pandas as pd
 import re, string, nltk, json, argparse, os
+
+from data.abbr_data import abbreviations
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-from data.abbr_data import abbreviations
+from alive_progress import alive_bar
+from alive_progress import config_handler
+
+config_handler.set_global(length=60, file=sys.stderr)
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -36,7 +42,7 @@ def preprocess_text_with_emojis(text, emoji_to_text):
     text = re.sub(r'https?://\S+', '', text)
 
     text = text.lower()
-    text = re.sub(f"[{re.escape(string.punctuation)}]", " ", text)
+    text = re.sub(f'[{re.escape(string.punctuation)}]', ' ', text)
     text = re.sub(r'\d+', '', text)
 
     # Insert space between adjacent emojis
@@ -73,44 +79,59 @@ def preprocess_text_with_emojis(text, emoji_to_text):
     return token_list
 
 
-def preprocess_dataset_with_emojis(dataset, emoji_to_text, target_columns):
+def preprocess_dataset_with_emojis(
+    dataset_file, emoji_to_text, target_columns, vocab
+):
+    dataset = load_csv(dataset_file)
     preprocessed_dataset = []
+    with alive_bar(len(dataset), bar='bubbles') as bar:
+        for _, row in dataset.iterrows():
+            if pd.isnull(row[target_columns[0]]):
+                continue
 
-    for index, row in dataset.iterrows():
-        if pd.isnull(row[target_columns[0]]):
-            continue
+            preprocessed_entry = {col: row[col] for col in target_columns}
 
-        preprocessed_entry = {col: row[col] for col in target_columns}
-
-        preprocessed_entry['text_with_emojis'] = preprocess_text_with_emojis(
-            row[target_columns[0]], emoji_to_text
-        )
-        preprocessed_dataset.append(preprocessed_entry)
-
-    return preprocessed_dataset
+            preprocessed_entry['text_with_emojis'] = (
+                preprocess_text_with_emojis(
+                    row[target_columns[0]], emoji_to_text
+                )
+            )
+            for word in preprocessed_entry['text_with_emojis']:
+                vocab.add(word)
+            preprocessed_dataset.append(preprocessed_entry)
+            bar()
+    return preprocessed_dataset, vocab
 
 
 def apply_pretrained_embeddings(dataset, vocab_dict):
-    for entry in dataset:
-        entry['text_with_embeddings'] = [
-            vocab_dict.get(token, [0]) for token in entry['text_with_emojis']
-        ]
+    with alive_bar(len(dataset), bar='smooth') as bar:
+        for entry in dataset:
+            entry['text_with_embeddings'] = [
+                vocab_dict.get(token, [0])
+                for token in entry['text_with_emojis']
+            ]
+            bar()
+
     return dataset
 
 
-def load_embedding(embedding_file):
+def load_embedding(embedding_file, vocab):
     vocab_dict = {}
-    with open(embedding_file, 'r', encoding='utf-8') as file:
-        for line in file:
-            values = line.split()
-            word = values[0]
-            vector = [float(val) for val in values[1:]]
-            vocab_dict[word] = vector
+    with alive_bar(
+        1193514, bar='brackets'
+    ) as bar:  # Embedding file has 1193514 lines
+        with open(embedding_file, 'r', encoding='utf-8') as file:
+            for line in file:
+                values = line.split()
+                word = values[0]
+                if word in vocab:
+                    vector = [float(val) for val in values[1:]]
+                    vocab_dict[word] = vector
+                bar()
     return vocab_dict
 
 
 def main(dataset):
-
     # Switch between train and test dataset and columns
     if dataset == 'train':
         dataset_file = os.path.join(DATA_DIR, 'train', 'train.En.csv')
@@ -131,25 +152,24 @@ def main(dataset):
         dataset_file = os.path.join(DATA_DIR, 'test', 'task_A_En_test.csv')
         target_columns = ['text', 'sarcastic']
         output_file_path = os.path.join(DATA_DIR, 'prep_test.json')
-
     else:
         print(
             "Invalid dataset argument. Please use --dataset train or --dataset test."
         )
         exit(1)
 
-    # Load data
-    text_dataset = load_csv(dataset_file)
+    # Load emoji data
     emoji_dataset = load_csv(
-        os.path.join(DATA_DIR, "emoji_and_abbr/emoji_df.csv")
+        os.path.join(DATA_DIR, 'emoji_and_abbr/emoji_df.csv')
     )
 
     # Map emojis to text labels
     emoji_to_text = dict(zip(emoji_dataset['emoji'], emoji_dataset['name']))
 
+    vocab = set([])
     # Preprocess dataset with emojis
-    preprocessed_data_with_emojis = preprocess_dataset_with_emojis(
-        text_dataset, emoji_to_text, target_columns
+    preprocessed_data_with_emojis, vocab = preprocess_dataset_with_emojis(
+        dataset_file, emoji_to_text, target_columns, vocab
     )
 
     # Save output file
@@ -160,11 +180,11 @@ def main(dataset):
         for entry in preprocessed_data_with_emojis:
             print(entry, file=output_file_with_emojis)
 
-    print(f"Output saved to {output_file_with_emojis_path}")
+    print(f'Output saved to {output_file_with_emojis_path}')
 
     # Apply pretrained embeddings
     embedding_file = './data/glove.twitter.27B/glove.twitter.27B.200d.txt'
-    vocab_dict = load_embedding(embedding_file)
+    vocab_dict = load_embedding(embedding_file, vocab)
     preprocessed_data_with_embeddings = apply_pretrained_embeddings(
         preprocessed_data_with_emojis, vocab_dict
     )
