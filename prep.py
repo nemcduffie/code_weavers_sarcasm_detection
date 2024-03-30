@@ -84,7 +84,7 @@ def preprocess_dataset_with_emojis(
 ):
     dataset = load_csv(dataset_file)
     preprocessed_dataset = []
-    with alive_bar(len(dataset), bar='bubbles') as bar:
+    with alive_bar(len(dataset), bar='circles', title='Process emojis ') as bar:
         for _, row in dataset.iterrows():
             if pd.isnull(row[target_columns[0]]):
                 continue
@@ -98,13 +98,14 @@ def preprocess_dataset_with_emojis(
             )
             for word in preprocessed_entry['text_with_emojis']:
                 vocab.add(word)
+
             preprocessed_dataset.append(preprocessed_entry)
             bar()
     return preprocessed_dataset, vocab
 
 
 def apply_pretrained_embeddings(dataset, vocab_dict):
-    with alive_bar(len(dataset), bar='smooth') as bar:
+    with alive_bar(len(dataset), bar='filling', title='Apply embedding') as bar:
         for entry in dataset:
             entry['text_with_embeddings'] = [
                 vocab_dict.get(token, [0])
@@ -118,7 +119,7 @@ def apply_pretrained_embeddings(dataset, vocab_dict):
 def load_embedding(embedding_file, vocab):
     vocab_dict = {}
     with alive_bar(
-        1193514, bar='brackets'
+        1193514, bar='brackets', title='Load embedding '
     ) as bar:  # Embedding file has 1193514 lines
         with open(embedding_file, 'r', encoding='utf-8') as file:
             for line in file:
