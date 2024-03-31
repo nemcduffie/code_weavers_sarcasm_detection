@@ -1,14 +1,11 @@
+import keras.backend as kb
 import torch.nn as nn
-from sklearn.metrics import (
-    classification_report,
-    f1_score,
-)
 
 from keras.models import Sequential
 from keras.layers import LSTM as KerasLSTM
 from keras.layers import Dense, Embedding, Dropout, Bidirectional, Attention
 from keras.initializers import Constant
-import keras.backend as kb
+from sklearn.metrics import classification_report, f1_score
 
 
 class LSTM(nn.Module):

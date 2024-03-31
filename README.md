@@ -1,33 +1,32 @@
 # code_weavers_sarcasm_detection
 
-### To run in docker:
+### To run docker container:
 
-To run all four models in a docker conatiner:
+To build and run all four models in a docker conatiner:
 
-    docker-compose build && docker-compose up
+    docker-compose up --build
 
-Same commands but with DEBUG enabled:
+Same command but with `DEBUG` enabled:
 
-    docker-compose --log-level DEBUG build && docker-compose --log-level DEBUG up
+    docker-compose --log-level DEBUG up --build
 
-To run individual models set the following environment variables to True:
+To run individual models set the following environment variables to 1 like so:
 
 
-    # FFNN, LSTM, LSTM_ATTENTION, SVM
+    # model options: FFNN, LSTM, LSTM_ATTENTION, SVM
+    LSTM=1 FFNN=1 docker-compose up --build
 
-    # Run build if you haven't already done so
-    docker-compos build
-    # Run container with chosen models set to True
-    LSTM=1 FFNN=1 docker up
 
 
 You can also set `SAVE_WORD_INDEX` to True if you would like the word indexed saved to a json file like so:
 
+
+You can also set `SAVE_WORD_INDEX` to 1 if you would like the word indexed saved to a json file like so:
+
     SAVE_WORD_INDEX=1 FFNN=1 docker run up
 
 
-
-### To run the models loacally (ideallpy with Python 3.11) :
+### To run the models loacally (ideallpy with Python 3.11):
 
 To install requirements:
 
@@ -55,4 +54,3 @@ Arguments can be combined to run training on multiple models like the following:
     python train.py --train_ffnn --train_lstm --save_word_index
     # Runs training on all four models
     python train.py --train_ffnn --train_svm --train_lstm --train_lstm_attention
-

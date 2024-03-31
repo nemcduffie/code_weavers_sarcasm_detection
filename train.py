@@ -1,4 +1,5 @@
 import argparse
+import os
 import numpy as np
 import json
 import logging
@@ -18,7 +19,7 @@ TRAIN_DATA_PATH = './data/prep_train.json'
 TEST_DATA_PATH = './data/prep_test.json'
 EMBEDDING_DIM = 200
 EPOCHS = 25
-VERBOSE = 0
+VERBOSE = int(os.getenv('VERBOSE', 0))
 
 
 # Function to load and organise data
@@ -160,14 +161,7 @@ def main(train=None, save_word_index=False):
 
     if train == None or 'lstm' in train:
         # Create LSTM model
-        models.append(
-            LSTM(
-                num_words,
-                max_len,
-                EMBEDDING_DIM,
-                embedding_matrix,
-            )
-        )
+        models.append(LSTM(num_words, max_len, EMBEDDING_DIM, embedding_matrix))
 
     if train == None or 'lstm_attention' in train:
         # Create LSTM model with attention

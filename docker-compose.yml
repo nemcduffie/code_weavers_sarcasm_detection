@@ -12,5 +12,6 @@ services:
       LSTM_ATTENTION: ${LSTM_ATTENTION:-0}
       SVM: ${SVM:-0}
       SAVE_WORD_INDEX: ${SAVE_WORD_INDEX:-0}
+      VERBOSE: ${VERBOSE:-0}
     command: >
       sh -c "python main.py"

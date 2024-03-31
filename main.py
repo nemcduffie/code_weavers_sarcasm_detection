@@ -1,6 +1,5 @@
-import numpy as np
-import tensorflow as tf
 import os
+import tensorflow as tf
 
 from prep import main as main_prep
 from train import main as main_train
@@ -14,8 +13,13 @@ for model in ['ffnn', 'lstm', 'lstm_attention', 'svm']:
 
 
 def main():
+    print('\nPreparing test data...')
     main_prep('test')
+
+    print('\nPreparing train data...')
     main_prep('train')
+
+    print(f'\nTraining and testing {MODELS or "all"} models\n')
     main_train(MODELS or None, SAVE_WORD_INDEX)
 
 

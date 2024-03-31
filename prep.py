@@ -1,14 +1,13 @@
-import sys
 import pandas as pd
-import re, string, nltk, json, argparse, os
+import random, sys, re, string, nltk, json, argparse, os
 
+from alive_progress import alive_bar
+from alive_progress import config_handler
 from data.abbr_data import abbreviations
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-from alive_progress import alive_bar
-from alive_progress import config_handler
 
-config_handler.set_global(length=60, file=sys.stderr)
+config_handler.set_global(length=50, file=sys.stderr)
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -82,14 +81,15 @@ def preprocess_text_with_emojis(text, emoji_to_text):
 def preprocess_dataset_with_emojis(
     dataset_file, emoji_to_text, target_columns, vocab
 ):
-    dataset = load_csv(dataset_file)
     preprocessed_dataset = []
+    dataset = load_csv(dataset_file)
     with alive_bar(len(dataset), bar='circles', title='Process emojis ') as bar:
         for _, row in dataset.iterrows():
+            bar()
             if pd.isnull(row[target_columns[0]]):
                 continue
 
-            preprocessed_entry = {col: row[col] for col in target_columns}
+            preprocessed_entry = {col: row.get(col) for col in target_columns}
 
             preprocessed_entry['text_with_emojis'] = (
                 preprocess_text_with_emojis(
@@ -100,26 +100,26 @@ def preprocess_dataset_with_emojis(
                 vocab.add(word)
 
             preprocessed_dataset.append(preprocessed_entry)
-            bar()
     return preprocessed_dataset, vocab
 
 
 def apply_pretrained_embeddings(dataset, vocab_dict):
-    with alive_bar(len(dataset), bar='filling', title='Apply embedding') as bar:
+    with alive_bar(
+        len(dataset), bar='brackets', title='Apply embedding'
+    ) as bar:
         for entry in dataset:
             entry['text_with_embeddings'] = [
                 vocab_dict.get(token, [0])
                 for token in entry['text_with_emojis']
             ]
             bar()
-
     return dataset
 
 
 def load_embedding(embedding_file, vocab):
     vocab_dict = {}
     with alive_bar(
-        1193514, bar='brackets', title='Load embedding '
+        1193514, bar='filling', title='Load embedding '
     ) as bar:  # Embedding file has 1193514 lines
         with open(embedding_file, 'r', encoding='utf-8') as file:
             for line in file:
@@ -155,7 +155,7 @@ def main(dataset):
         output_file_path = os.path.join(DATA_DIR, 'prep_test.json')
     else:
         print(
-            "Invalid dataset argument. Please use --dataset train or --dataset test."
+            'Invalid dataset argument. Please use --dataset train or --dataset test.'
         )
         exit(1)
 
@@ -169,7 +169,7 @@ def main(dataset):
 
     vocab = set([])
     # Preprocess dataset with emojis
-    preprocessed_data_with_emojis, vocab = preprocess_dataset_with_emojis(
+    preprocessed_data, vocab = preprocess_dataset_with_emojis(
         dataset_file, emoji_to_text, target_columns, vocab
     )
 
@@ -178,7 +178,7 @@ def main(dataset):
     with open(
         output_file_with_emojis_path, 'w', encoding='utf-8'
     ) as output_file_with_emojis:
-        for entry in preprocessed_data_with_emojis:
+        for entry in preprocessed_data:
             print(entry, file=output_file_with_emojis)
 
     print(f'Output saved to {output_file_with_emojis_path}')
@@ -187,7 +187,7 @@ def main(dataset):
     embedding_file = './data/glove.twitter.27B/glove.twitter.27B.200d.txt'
     vocab_dict = load_embedding(embedding_file, vocab)
     preprocessed_data_with_embeddings = apply_pretrained_embeddings(
-        preprocessed_data_with_emojis, vocab_dict
+        preprocessed_data, vocab_dict
     )
 
     with open(output_file_path, 'w', encoding='utf-8') as output_file:

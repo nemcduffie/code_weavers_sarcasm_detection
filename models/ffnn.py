@@ -31,7 +31,6 @@ class FFNN(nn.Module):
         self.model.add(
             keras.layers.Dense(1, activation='sigmoid')
         )  # Output layer
-        self.model.summary()
         self.model.compile(
             optimizer='adam', loss='binary_crossentropy', metrics=['accuracy']
         )
