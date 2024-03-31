@@ -54,19 +54,16 @@ Same command but with `DEBUG` enabled:
 
 To run individual models set the following environment variables to 1 like so:
 
-
     # model options: FFNN, LSTM, LSTM_ATTENTION, SVM
     LSTM=1 FFNN=1 docker-compose up --build
 
+To include optional extra dataset (adaptated from test data [task_C_En_test.csv](data/test/task_C_En_test.csv) intended for another task) in training data: 
 
-
-You can also set `SAVE_WORD_INDEX` to True if you would like the word indexed saved to a json file like so:
-
+    TRAIN_EXTRA=1 docker-compose up --build
 
 You can also set `SAVE_WORD_INDEX` to 1 if you would like the word indexed saved to a json file like so:
 
     SAVE_WORD_INDEX=1 FFNN=1 docker run up
-
 
 ## To run the models loacally (ideallpy with Python 3.11):
 
@@ -78,6 +75,10 @@ To run data preprocessing:
 
     python prep.py --dataset train
     python prep.py --dataset test
+
+To include optional extra dataset (adaptated from test data [task_C_En_test.csv](data/test/task_C_En_test.csv) intended for another task) in training data: 
+
+    python prep.py --dataset train_extra
 
 To run the individual training scripts:
 

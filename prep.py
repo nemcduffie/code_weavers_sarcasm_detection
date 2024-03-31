@@ -13,6 +13,7 @@ nltk.download('punkt')
 nltk.download('stopwords')
 
 DATA_DIR = os.path.join(os.getcwd(), 'data')
+PRUNE_DATA = os.getenv('PRUNE_DATA', '0') == '1'
 
 
 # Load data
@@ -27,8 +28,8 @@ def parse_arguments():
     parser.add_argument(
         '--dataset',
         required=True,
-        choices=['train', 'test'],
-        help='Specify the dataset file (train or test)',
+        choices=['train', 'train_extra', 'test'],
+        help='Specify the dataset file (train, train_extra, or test)',
     )
     return parser.parse_args()
 
@@ -86,7 +87,13 @@ def preprocess_dataset_with_emojis(
     with alive_bar(len(dataset), bar='circles', title='Process emojis ') as bar:
         for _, row in dataset.iterrows():
             bar()
-            if pd.isnull(row[target_columns[0]]):
+            if row.get('text_0', False):
+                row = {
+                    'tweet': row.get(f'text_{row["sarcastic_id"]}'),
+                    'sarcastic': 1,
+                    'rephrase': row.get(f'text_{abs(row["sarcastic_id"]-1)}'),
+                }
+            elif pd.isnull(row[target_columns[0]]):
                 continue
 
             preprocessed_entry = {col: row.get(col) for col in target_columns}
@@ -134,7 +141,7 @@ def load_embedding(embedding_file, vocab):
 
 def main(dataset):
     # Switch between train and test dataset and columns
-    if dataset == 'train':
+    if dataset in ['train', 'train_extra']:
         dataset_file = os.path.join(DATA_DIR, 'train', 'train.En.csv')
         target_columns = [
             'tweet',
@@ -155,7 +162,7 @@ def main(dataset):
         output_file_path = os.path.join(DATA_DIR, 'prep_test.json')
     else:
         print(
-            'Invalid dataset argument. Please use --dataset train or --dataset test.'
+            'Invalid dataset argument. Please use --dataset train, --dataset train_extra, or --dataset test.'
         )
         exit(1)
 
@@ -172,6 +179,25 @@ def main(dataset):
     preprocessed_data, vocab = preprocess_dataset_with_emojis(
         dataset_file, emoji_to_text, target_columns, vocab
     )
+
+    # Optional adaptation of task_C_En_test.csv
+    # (originally intended as test data for another task)
+    if dataset == 'train_extra':
+        original_len_data = len(preprocessed_data)
+        extra_dataset_file = os.path.join(
+            DATA_DIR, 'test', 'task_C_En_test.csv'
+        )
+        extra_preprocessed, vocab = preprocess_dataset_with_emojis(
+            extra_dataset_file,
+            emoji_to_text,
+            target_columns,
+            vocab,
+        )
+
+        preprocessed_data.extend(extra_preprocessed)
+        print(
+            f'Extra dataset increases training data from {original_len_data} to {len(preprocessed_data)} entries ({len(extra_preprocessed)} additional sarcastic entries).'
+        )
 
     # Save output file
     output_file_with_emojis_path = os.path.join(DATA_DIR, 'output_file.txt')
