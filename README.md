@@ -1,6 +1,48 @@
-# code_weavers_sarcasm_detection
+# **Sarcasm Detection**
 
-### To run docker container:
+This repository tackles the task from the [iSarcasmEval](https://sites.google.com/view/semeval2022-isarcasmeval#h.t53li2ejhrh8) shared task, Task 6, Subtask A, at SemEval 2022.
+Subtask A consists of determining whether a given text is sarcastic or non-sarcastic. The selected language in this project is English. 
+
+### Quickstart
+
+    docker-compose up --build
+
+
+### Approach:
+
+To identify sarcasm in tweets, four different models (FFNN, LSTM, LSTM with Attention, and SVM) are developed. The effectiveness of each model is compared.
+
+### Metrics:
+
+To evaluate and compare the performance of the models, F1-score is used. sklearn.metrics is used to calculate precision, recall, and F1-score.
+
+### Dataset:
+
+The dataset used is the one created for SemEval 2022 Task 6. The overview paper [SemEval-2022 Task 6: iSarcasmEval, Intended Sarcasm Detection in English and Arabic (Abu Farha et al., SemEval 2022)](https://aclanthology.org/2022.semeval-1.111/) contains detailed information.
+
+### Data preprocessing:
+
+Emojis and other common elements present in tweets, such as abbreviations or hashtags, have to be addressed as part of the preprocessing of the data.
+
+### Emojis:
+
+Emojis are mapped into text for further embedding into vectors using a list of Unicode emoji characters and sequences. More information about the emoji dataset used can be found [here](https://www.unicode.org/emoji/charts-14.0/full-emoji-list.html).
+
+### Abbreviations
+
+Abbreviations are converted into full words using a dictionary compiled from common abbreviations. 
+
+### Word embedding:
+
+[GloVe: Global Vectors for Word Representation (Pennington et al., EMNLP 2014)](https://aclanthology.org/D14-1162/) was used to embed words into vectors. 
+The pre-trained word vector files can be downloaded [here](https://nlp.stanford.edu/projects/glove/).
+In this project, the *glove.twitter.27B.200d.txt* file with 200-dimension vectors was used.  
+
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------ 
+
+# To run docker container:
 
 To build and run all four models in a docker conatiner:
 
@@ -26,7 +68,7 @@ You can also set `SAVE_WORD_INDEX` to 1 if you would like the word indexed saved
     SAVE_WORD_INDEX=1 FFNN=1 docker run up
 
 
-### To run the models loacally (ideallpy with Python 3.11):
+## To run the models loacally (ideallpy with Python 3.11):
 
 To install requirements:
 

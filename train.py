@@ -157,7 +157,15 @@ def main(train=None, save_word_index=False):
     models = []
     if train == None or 'ffnn' in train:
         # Create FFNN model
-        models.append(FFNN(num_words, max_len, EMBEDDING_DIM, embedding_matrix))
+        models.append(
+            FFNN(
+                num_words,
+                max_len,
+                EMBEDDING_DIM,
+                embedding_matrix,
+                drop_rate=0.2,
+            )
+        )
 
     if train == None or 'lstm' in train:
         # Create LSTM model

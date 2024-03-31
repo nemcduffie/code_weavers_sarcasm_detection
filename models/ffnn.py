@@ -10,7 +10,10 @@ from sklearn.metrics import classification_report
 class FFNN(nn.Module):
     __name__ = 'FFNN'
 
-    def __init__(self, num_words, max_len, embedding_dim, embedding_matrix):
+    def __init__(
+        self, num_words, max_len, embedding_dim, embedding_matrix, drop_rate=0.3
+    ):
+
         self.model = keras.Sequential()
         self.model.add(
             keras.layers.Embedding(
@@ -25,7 +28,7 @@ class FFNN(nn.Module):
         self.model.add(
             keras.layers.Dense(63, activation='relu')
         )  # First hidden layer
-        self.model.add(keras.layers.Dropout(0.3))
+        self.model.add(keras.layers.Dropout(drop_rate))
         self.model.add(
             keras.layers.Dense(32, activation='tanh')
         )  # Second hidden layer
